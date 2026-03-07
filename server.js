@@ -11,6 +11,7 @@ const authRouter  = require('./routes/auth');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// ─── Security Middleware ───────────────────────────────────────────────────────
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -18,7 +19,7 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
       scriptSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", "data:", "blob:"]
+      imgSrc: ["'self'", "data:"]
     }
   }
 }));
@@ -29,22 +30,28 @@ app.use(cors({
   allowedHeaders: ['Content-Type']
 }));
 
+// Rate limiting – prevent abuse
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
+  windowMs: 15 * 60 * 1000, // 15 minutes
   max: 200,
-  message: { success: false, message: 'Too many requests. Please try again later.' }
+  message: { success: false, message: 'Too many requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false
 });
 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 50,
   message: { success: false, message: 'Too many API requests. Please slow down.' }
 });
 
 app.use(limiter);
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// ─── Parsing Middleware ────────────────────────────────────────────────────────
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+
+// ─── Static Files ─────────────────────────────────────────────────────────────
 app.use(express.static(path.join(__dirname, 'public'), {
   maxAge: '1d',
   etag: true
@@ -54,11 +61,12 @@ app.use(express.static(path.join(__dirname, 'public'), {
 app.use('/api/auth',  authRouter);
 app.use('/api/items', apiLimiter, itemsRouter);
 
-// ─── Default → login page ─────────────────────────────────────────────────────
+// ─── Default route → login ────────────────────────────────────────────────────
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
+// ─── SPA Catch-all ────────────────────────────────────────────────────────────
 app.get('*', (req, res) => {
   if (req.path.startsWith('/api/')) {
     return res.status(404).json({ success: false, message: 'API endpoint not found' });
@@ -66,16 +74,22 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
+// ─── Error Handling ───────────────────────────────────────────────────────────
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err.stack);
-  res.status(err.status || 500).json({
+  const statusCode = err.status || 500;
+  res.status(statusCode).json({
     success: false,
-    message: process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message
+    message: process.env.NODE_ENV === 'production'
+      ? 'An internal server error occurred'
+      : err.message
   });
 });
 
+// ─── Start Server ─────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`📦 Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 
 module.exports = app;
