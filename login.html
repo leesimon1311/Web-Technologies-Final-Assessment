@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Lost &amp; Found — Quest International University</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --forest:#1b3a2f;--forest-d:#122a21;--sage:#3d6b58;--sage-l:#e8f2ed;
+  --amber:#d97c2a;--cream:#f7f3ec;--white:#fff;
+  --ink:#1a1a18;--ink2:#3b3b38;--ink3:#6b6b66;--ink4:#a8a89f;
+  --border:#dbd5ca;--borderl:#ede8e0;--red:#c0392b;--redl:#fdecea;
+  --rsm:8px;--rmd:14px;--rlg:20px;--rxl:28px;
+  --shxs:0 1px 3px rgba(0,0,0,.07);--shsm:0 2px 8px rgba(0,0,0,.09);
+  --shmd:0 6px 24px rgba(0,0,0,.11);--shlg:0 20px 60px rgba(0,0,0,.18);
+  --ease:cubic-bezier(.25,.8,.25,1);--eout:cubic-bezier(0,0,.2,1)
+}
+html{height:100%;scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.6;color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* ── View switching ── */
+#vLogin{display:flex}
+#vApp  {display:none}
+body.app{background:var(--cream)}
+body.app  #vLogin{display:none}
+body.app  #vApp  {display:block}
+body.login{
+  background-color:var(--forest-d);
+  background-image:
+    radial-gradient(ellipse at 15% 50%,rgba(61,107,88,.55) 0%,transparent 55%),
+    radial-gradient(ellipse at 85% 10%,rgba(217,124,42,.18) 0%,transparent 45%)
+}
+
+/* ════ LOGIN ════ */
+#vLogin{flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:32px 16px}
+#loginWrap{display:flex;flex-direction:column;align-items:center;width:100%;max-width:420px}
+.lbrand{text-align:center;margin-bottom:32px;}
+.lbrand__ico{width:68px;height:68px;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.18);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 14px;box-shadow:0 8px 32px rgba(0,0,0,.2)}
+.lbrand__title{font-family:'Syne',sans-serif;font-weight:800;font-size:24px;color:#fff;letter-spacing:-.3px}
+.lbrand__sub{font-size:13px;color:rgba(255,255,255,.45);font-weight:300;margin-top:3px}
+
+.lcard{background:#fff;border-radius:var(--rxl);width:100%;max-width:420px;box-shadow:var(--shlg);overflow:hidden;position:relative}
+.lcard__head{background:var(--forest);background-image:radial-gradient(ellipse at 110% -20%,rgba(61,107,88,.7) 0%,transparent 60%);padding:22px 28px 18px}
+.lcard__head h2{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:#fff}
+.lcard__head p{font-size:13px;color:rgba(255,255,255,.45);font-weight:300;margin-top:3px}
+.lcard__body{padding:26px 28px 28px}
+
+/* Auth panels */
+.auth-panel[hidden]{display:none!important}
+
+.lform{display:flex;flex-direction:column;gap:15px}
+.lform__group{display:flex;flex-direction:column;gap:5px}
+.lform__label{font-size:13px;font-weight:600;color:var(--ink2)}
+.liw{position:relative}
+.lic{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--ink4);pointer-events:none;display:flex}
+.linput{width:100%;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);background:#fff;border:1.5px solid var(--border);border-radius:var(--rsm);padding:11px 14px 11px 40px;outline:none;transition:border-color .18s,box-shadow .18s}
+.linput:focus{border-color:var(--sage);box-shadow:0 0 0 3px rgba(61,107,88,.13)}
+.linput::placeholder{color:var(--ink4)}
+.linput.err{border-color:var(--red);box-shadow:0 0 0 3px rgba(192,57,43,.1)}
+.linput--pw{padding-right:44px}
+.linput--noico{padding-left:14px}
+.pwbtn{position:absolute;right:11px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--ink4);display:flex;padding:4px;border-radius:4px;transition:color .15s}
+.pwbtn:hover{color:var(--ink2)}
+.lerr{font-size:12px;color:var(--red);min-height:14px}
+
+.lalert{padding:11px 14px;border-radius:var(--rsm);font-size:13.5px;font-weight:500;display:flex;align-items:flex-start;gap:8px;margin-bottom:14px;animation:shake .3s var(--ease)}
+.lalert--e{background:var(--redl);color:#a93226;border:1px solid #f5c6c3}
+.lalert--ok{background:var(--sage-l);color:#245c47;border:1px solid #b6d9c9}
+
+.lbtn{width:100%;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;padding:13px 20px;border:none;border-radius:var(--rsm);background:var(--amber);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 3px 12px rgba(217,124,42,.3);margin-top:2px;transition:background .18s,box-shadow .18s,transform .1s}
+.lbtn:hover:not(:disabled){background:#c26e22;box-shadow:0 5px 20px rgba(217,124,42,.4)}
+.lbtn:active:not(:disabled){transform:scale(.98)}
+.lbtn:disabled{background:var(--ink4);box-shadow:none;cursor:not-allowed}
+
+.llink{background:none;border:none;color:var(--sage);font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:600;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px;transition:color .15s}
+.llink:hover{color:var(--forest)}
+
+.lswitcher{text-align:center;margin-top:18px;font-size:13.5px;color:var(--ink3)}
+.lswitcher button{margin-left:4px}
+
+.ldivider{display:flex;align-items:center;gap:12px;margin:4px 0}
+.ldivider::before,.ldivider::after{content:'';flex:1;height:1px;background:var(--borderl)}
+.ldivider span{font-size:12px;color:var(--ink4);white-space:nowrap}
+
+.spin{width:16px;height:16px;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;flex-shrink:0}
+.lfooter{text-align:center;font-size:12px;color:rgba(255,255,255,.3);margin-top:22px}
+
+/* Password strength */
+.pw-strength{margin-top:6px;display:flex;gap:4px}
+.pw-strength__bar{height:3px;border-radius:99px;flex:1;background:var(--borderl);transition:background .25s}
+.pw-strength__bar.weak{background:#e74c3c}
+.pw-strength__bar.fair{background:var(--amber)}
+.pw-strength__bar.good{background:#27ae60}
+.pw-strength__label{font-size:11px;color:var(--ink4);margin-top:3px;min-height:14px;transition:color .25s}
+
+/* ════ APP ════ */
+.container{max-width:1180px;margin:0 auto;padding:0 24px}
+.header{background:var(--forest);background-image:radial-gradient(ellipse at 80% -20%,rgba(61,107,88,.6) 0%,transparent 60%),radial-gradient(ellipse at -10% 120%,rgba(18,42,33,.8) 0%,transparent 50%);position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,.25)}
+.header__inner{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:15px 0}
+.header__brand{display:flex;align-items:center;gap:13px}
+.header__emb{width:44px;height:44px;background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.header__title{font-family:'Syne',sans-serif;font-weight:700;font-size:17px;color:#fff;letter-spacing:-.2px}
+.header__sub{font-size:12px;color:rgba(255,255,255,.45);font-weight:300;margin-top:1px}
+.header__right{display:flex;align-items:center;gap:10px}
+.upill{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:99px;padding:5px 14px 5px 8px}
+.upill__av{width:28px;height:28px;background:var(--amber);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;font-family:'Syne',sans-serif;flex-shrink:0}
+.upill__name{font-size:13px;font-weight:600;color:#fff;line-height:1.2}
+.upill__role{font-size:11px;color:rgba(255,255,255,.45);font-weight:300}
+.tabs{background:var(--forest-d);border-bottom:1px solid rgba(255,255,255,.07)}
+.tabs__inner{display:flex}
+.tab{font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:500;color:rgba(255,255,255,.45);background:none;border:none;padding:12px 22px;cursor:pointer;position:relative;transition:color .2s}
+.tab::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--amber);transform:scaleX(0);transition:transform .2s;border-radius:2px 2px 0 0}
+.tab:hover{color:rgba(255,255,255,.8)}
+.tab--on{color:#fff}
+.tab--on::after{transform:scaleX(1)}
+.main{padding:32px 0 64px}
+.filters{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap}
+.fsearch{position:relative;flex:1;min-width:220px}
+.fsearch__ico{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--ink4);pointer-events:none}
+.fcontrols{display:flex;gap:10px}
+.input,.select,.textarea{width:100%;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);background:#fff;border:1.5px solid var(--border);border-radius:var(--rsm);padding:10px 14px;outline:none;transition:border-color .18s,box-shadow .18s}
+.fsearch .input{padding-left:40px}
+.input:focus,.select:focus,.textarea:focus{border-color:var(--sage);box-shadow:0 0 0 3px rgba(61,107,88,.12)}
+.input::placeholder{color:var(--ink4)}
+.input.err,.select.err,.textarea.err{border-color:var(--red);box-shadow:0 0 0 3px rgba(192,57,43,.1)}
+.select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a8a89f' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px;cursor:pointer}
+.textarea{resize:vertical;min-height:90px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}
+.scard{background:#fff;border:1.5px solid var(--borderl);border-radius:var(--rmd);padding:16px 20px;display:flex;flex-direction:column;gap:3px;box-shadow:var(--shxs);transition:box-shadow .18s,transform .18s}
+.scard:hover{box-shadow:var(--shsm);transform:translateY(-1px)}
+.scard__n{font-family:'Syne',sans-serif;font-weight:700;font-size:28px;line-height:1;letter-spacing:-.5px}
+.scard__l{font-size:12px;font-weight:500;letter-spacing:.5px;text-transform:uppercase;color:var(--ink3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.card{background:#fff;border:1.5px solid var(--borderl);border-radius:var(--rlg);padding:20px;transition:box-shadow .2s,transform .2s;animation:fadeUp .3s var(--eout) both;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--border)}
+.card[data-t="Lost"]::before{background:#e74c3c}
+.card[data-t="Found"]::before{background:var(--sage)}
+.card:hover{box-shadow:var(--shmd);transform:translateY(-3px)}
+.card__hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px}
+.card__title{font-family:'Syne',sans-serif;font-size:15px;font-weight:600;color:var(--ink);line-height:1.3}
+.card__badges{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap}
+.badge{font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;padding:3px 9px;border-radius:99px;white-space:nowrap}
+.badge--lost{background:#fdecea;color:#c0392b}
+.badge--found{background:var(--sage-l);color:#245c47}
+.badge--active{background:#fff4e6;color:#b05c10}
+.badge--claimed{background:#e8f0fe;color:#2c5fca}
+.badge--resolved{background:#f0f0f0;color:#666}
+.card__cat{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--ink3);font-weight:500;margin-bottom:8px}
+.card__desc{font-size:13.5px;color:var(--ink2);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:12px}
+.card__meta{display:flex;flex-wrap:wrap;gap:12px;font-size:12.5px;color:var(--ink3);border-top:1px solid var(--borderl);padding-top:12px}
+.card__mi{display:flex;align-items:center;gap:5px}
+.card__acts{display:flex;gap:6px;margin-top:12px}
+.empty{text-align:center;padding:72px 24px;grid-column:1/-1}
+.empty__ico{font-size:52px;display:block;margin-bottom:16px;opacity:.6}
+.empty__txt{font-size:17px;color:var(--ink3);margin-bottom:20px;font-weight:500}
+.btn{font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:600;padding:9px 18px;border:1.5px solid transparent;border-radius:var(--rsm);cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:background .18s,transform .1s,box-shadow .18s;white-space:nowrap}
+.btn:active{transform:scale(.97)}
+.btn--p{background:var(--amber);color:#fff;border-color:var(--amber);box-shadow:0 2px 8px rgba(217,124,42,.25)}
+.btn--p:hover{background:#c26e22;border-color:#c26e22}
+.btn--s{background:#fff;color:var(--ink2);border-color:var(--border)}
+.btn--s:hover{background:var(--cream)}
+.btn--d{background:var(--redl);color:var(--red);border-color:#f5c6c3}
+.btn--d:hover{background:#fad4d1}
+.btn--g{background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);border-color:rgba(255,255,255,.12)}
+.btn--g:hover{background:rgba(255,255,255,.16);color:#fff}
+.btn--sm{font-size:12px;padding:6px 12px}
+.moverlay{position:fixed;inset:0;background:rgba(18,42,33,.55);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:300;padding:16px;animation:fadeIn .2s var(--eout)}
+.moverlay[hidden]{display:none!important}
+.modal{background:#fff;border-radius:var(--rxl);width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:var(--shlg);animation:slideUp .25s var(--eout);scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.modal--w{max-width:640px}
+.modal__hdr{display:flex;align-items:center;justify-content:space-between;padding:22px 28px 16px;border-bottom:1px solid var(--borderl);position:sticky;top:0;background:#fff;z-index:1}
+.modal__title{font-family:'Syne',sans-serif;font-weight:700;font-size:19px;color:var(--ink)}
+.modal__x{width:34px;height:34px;border:none;background:var(--cream);border-radius:50%;font-size:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ink3);transition:background .15s}
+.modal__x:hover{background:var(--borderl);color:var(--ink)}
+.form{padding:22px 28px 28px;display:flex;flex-direction:column;gap:15px}
+.frow{display:flex;gap:14px}
+.frow--2>*{flex:1;min-width:0}
+.fg{display:flex;flex-direction:column;gap:5px}
+.flabel{font-size:13px;font-weight:600;color:var(--ink2)}
+.flabel span{color:var(--amber)}
+.ferr{font-size:12px;color:var(--red);min-height:14px}
+.ffs{border:1.5px solid var(--borderl);border-radius:var(--rmd);padding:16px 18px;display:flex;flex-direction:column;gap:14px}
+.fleg{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--sage);letter-spacing:.4px;text-transform:uppercase;padding:0 6px}
+.facts{display:flex;gap:10px;justify-content:flex-end;padding-top:4px}
+.detail{padding:22px 28px 28px}
+.detail__hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.detail__title{font-family:'Syne',sans-serif;font-size:21px;font-weight:700;color:var(--ink)}
+.dsec{background:var(--cream);border:1px solid var(--borderl);border-radius:var(--rmd);padding:16px 18px;margin-bottom:12px}
+.dsec__ttl{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--sage);margin-bottom:10px}
+.dgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px 20px}
+.dfield label{font-size:11px;font-weight:600;color:var(--ink3);letter-spacing:.3px;text-transform:uppercase;display:block;margin-bottom:2px}
+.dfield p{font-size:14px;color:var(--ink)}
+.toast{position:fixed;bottom:28px;right:28px;background:var(--ink);color:#fff;font-size:14px;font-weight:500;padding:12px 20px;border-radius:var(--rmd);box-shadow:var(--shlg);z-index:500;display:flex;align-items:center;gap:10px;max-width:340px;animation:toastIn .25s var(--eout)}
+.toast[hidden]{display:none}
+.toast--ok{background:var(--forest)}
+.toast--er{background:var(--red)}
+.footer{background:var(--forest-d);color:rgba(255,255,255,.35);text-align:center;font-size:12.5px;padding:18px 24px}
+
+@keyframes fadeDown{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp {from{opacity:0;transform:translateY(22px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes fadeUp  {from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn  {from{opacity:0}to{opacity:1}}
+@keyframes toastIn {from{opacity:0;transform:translateY(12px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes spin    {to{transform:rotate(360deg)}}
+@keyframes shake   {0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
+
+@media(max-width:640px){
+  .header__title{font-size:15px}
+  .upill__role,.upill__name{display:none}
+  .upill{padding:5px 8px}
+  .frow{flex-direction:column}
+  .filters{flex-direction:column}
+  .grid{grid-template-columns:1fr}
+  .modal__hdr,.form,.detail{padding-left:18px;padding-right:18px}
+  .dgrid{grid-template-columns:1fr}
+  .stats{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body class="login">
+
+<!-- ══════════ LOGIN VIEW ══════════ -->
+<div id="vLogin">
+  <div id="loginWrap">
+
+    <div class="lbrand">
+      <div class="lbrand__ico">🎓</div>
+      <h1 class="lbrand__title">Campus Lost &amp; Found</h1>
+      <p class="lbrand__sub">Quest International University</p>
+    </div>
+
+    <div class="lcard">
+
+      <!-- SIGN IN -->
+      <div id="panelSignIn">
+        <div class="lcard__head">
+          <h2>Sign in to your account</h2>
+          <p>Use your student or staff credentials</p>
+        </div>
+        <div class="lcard__body">
+          <div id="siAlert"></div>
+          <div class="lform">
+            <div class="lform__group">
+              <label class="lform__label">Student ID or Email</label>
+              <div class="liw">
+                <span class="lic"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+                <input type="text" id="siId" class="linput" placeholder="TP12345 or you@qiu.edu.my" autocomplete="username"/>
+              </div>
+              <span class="lerr" id="siIdErr"></span>
+            </div>
+            <div class="lform__group">
+              <label class="lform__label">Password</label>
+              <div class="liw">
+                <span class="lic"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+                <input type="password" id="siPw" class="linput linput--pw" placeholder="Enter your password" autocomplete="current-password"/>
+                <button class="pwbtn" data-action="togglePw" data-input="siPw" data-ico="siEyeIco" aria-label="Toggle password">
+                  <svg id="siEyeIco" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+              <span class="lerr" id="siPwErr"></span>
+            </div>
+            <button class="lbtn" id="btnSignIn">Sign In</button>
+          </div>
+          <div class="ldivider" style="margin-top:20px"><span>Don't have an account?</span></div>
+          <div style="margin-top:12px;text-align:center">
+            <button class="lbtn" id="btnGoCreate" style="background:transparent;border:1.5px solid var(--border);color:var(--ink2);box-shadow:none;font-size:14px;padding:11px 20px">
+              Create Account
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CREATE ACCOUNT -->
+      <div id="panelCreate" hidden>
+        <div class="lcard__head">
+          <h2>Create an account</h2>
+          <p>Register with your QIU credentials</p>
+        </div>
+        <div class="lcard__body">
+          <div id="caAlert"></div>
+          <div class="lform">
+            <div class="lform__group">
+              <label class="lform__label">Full Name</label>
+              <div class="liw">
+                <span class="lic"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+                <input type="text" id="caName" class="linput" placeholder="Your full name" autocomplete="name"/>
+              </div>
+              <span class="lerr" id="caNameErr"></span>
+            </div>
+            <div class="lform__group">
+              <label class="lform__label">Student ID or Email</label>
+              <div class="liw">
+                <span class="lic"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+                <input type="text" id="caId" class="linput" placeholder="TP12345 or you@qiu.edu.my" autocomplete="username"/>
+              </div>
+              <span class="lerr" id="caIdErr"></span>
+            </div>
+            <div class="lform__group">
+              <label class="lform__label">Password</label>
+              <div class="liw">
+                <span class="lic"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+                <input type="password" id="caPw" class="linput linput--pw" placeholder="Create a password" oninput="updateStrength()" autocomplete="new-password"/>
+                <button class="pwbtn" data-action="togglePw" data-input="caPw" data-ico="caEyeIco" aria-label="Toggle password">
+                  <svg id="caEyeIco" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+              <div class="pw-strength">
+                <div class="pw-strength__bar" id="psb1"></div>
+                <div class="pw-strength__bar" id="psb2"></div>
+                <div class="pw-strength__bar" id="psb3"></div>
+                <div class="pw-strength__bar" id="psb4"></div>
+              </div>
+              <div class="pw-strength__label" id="pwStrengthLabel"></div>
+              <span class="lerr" id="caPwErr"></span>
+            </div>
+            <div class="lform__group">
+              <label class="lform__label">Confirm Password</label>
+              <div class="liw">
+                <span class="lic"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+                <input type="password" id="caPw2" class="linput linput--pw" placeholder="Repeat your password" autocomplete="new-password"/>
+                <button class="pwbtn" data-action="togglePw" data-input="caPw2" data-ico="caEye2Ico" aria-label="Toggle confirm password">
+                  <svg id="caEye2Ico" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+              <span class="lerr" id="caPw2Err"></span>
+            </div>
+            <button class="lbtn" id="btnCreateAccount">Create Account</button>
+          </div>
+          <div class="lswitcher">Already have an account? <button class="llink" data-action="signIn">Sign In</button></div>
+        </div>
+      </div>
+
+    </div>
+    <p class="lfooter">&copy; 2026 Quest International University</p>
+  </div>
+</div>
+
+<!-- ══════════ APP VIEW ══════════ -->
+<div id="vApp">
+
+  <header class="header">
+    <div class="container header__inner">
+      <div class="header__brand">
+        <div class="header__emb">🎓</div>
+        <div>
+          <div class="header__title">Campus Lost &amp; Found</div>
+          <div class="header__sub">Quest International University</div>
+        </div>
+      </div>
+      <div class="header__right">
+        <div class="upill">
+          <div class="upill__av" id="uAv">–</div>
+          <div><div class="upill__name" id="uName">–</div><div class="upill__role" id="uRole">–</div></div>
+        </div>
+        <button class="btn btn--p" id="btnNew">+ Submit Report</button>
+        <button class="btn btn--g btn--sm" id="btnLogout">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Sign Out
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <div class="container tabs__inner">
+      <button class="tab tab--on" data-tab="all">All Items</button>
+      <button class="tab" data-tab="Lost">Lost Items</button>
+      <button class="tab" data-tab="Found">Found Items</button>
+    </div>
+  </nav>
+
+  <main class="main">
+    <div class="container">
+      <div class="filters">
+        <div class="fsearch">
+          <svg class="fsearch__ico" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="search" id="fSearch" class="input" placeholder="Search title, location…" autocomplete="off"/>
+        </div>
+        <div class="fcontrols">
+          <select id="fCat" class="select"><option value="">All Categories</option><option>Electronics</option><option>Documents</option><option>Personal Items</option><option>Clothing</option><option>Keys</option><option>Accessories</option><option>Books</option><option>Other</option></select>
+          <select id="fStat" class="select"><option value="">All Statuses</option><option>Active</option><option>Claimed</option><option>Resolved</option></select>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="scard"><span class="scard__n" id="sTotal">–</span><span class="scard__l">Total</span></div>
+        <div class="scard"><span class="scard__n" id="sLost"  style="color:#c0392b">–</span><span class="scard__l">Lost</span></div>
+        <div class="scard"><span class="scard__n" id="sFound" style="color:var(--sage)">–</span><span class="scard__l">Found</span></div>
+        <div class="scard"><span class="scard__n" id="sActive" style="color:var(--amber)">–</span><span class="scard__l">Active</span></div>
+      </div>
+      <div id="grid" class="grid" role="list"></div>
+      <div id="empty" class="empty" hidden>
+        <span class="empty__ico">🔍</span>
+        <p class="empty__txt">No items found.</p>
+        <button class="btn btn--s" id="btnEmpty">Submit a Report</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Report / Edit Modal -->
+  <div class="moverlay" id="mReport" role="dialog" aria-modal="true" hidden>
+    <div class="modal">
+      <div class="modal__hdr">
+        <h2 class="modal__title" id="mTitle">Submit Report</h2>
+        <button class="modal__x" id="mClose">&times;</button>
+      </div>
+      <form id="rForm" class="form" novalidate>
+        <input type="hidden" id="rId"/>
+        <div class="frow frow--2">
+          <div class="fg">
+            <label class="flabel" for="rType">Report Type <span>*</span></label>
+            <select id="rType" class="select"><option value="">Select type…</option><option value="Lost">Lost Item</option><option value="Found">Found Item</option></select>
+            <span class="ferr" id="rTypeErr"></span>
+          </div>
+          <div class="fg">
+            <label class="flabel" for="rCat">Item Category <span>*</span></label>
+            <select id="rCat" class="select"><option value="">Select category…</option><option>Electronics</option><option>Documents</option><option>Personal Items</option><option>Clothing</option><option>Keys</option><option>Accessories</option><option>Books</option><option>Other</option></select>
+            <span class="ferr" id="rCatErr"></span>
+          </div>
+        </div>
+        <div class="fg">
+          <label class="flabel" for="rTitle">Item Title <span>*</span></label>
+          <input type="text" id="rTitle" class="input" placeholder="e.g. Black HP Laptop Bag" maxlength="255"/>
+          <span class="ferr" id="rTitleErr"></span>
+        </div>
+        <div class="fg">
+          <label class="flabel" for="rDesc">Description <span>*</span></label>
+          <textarea id="rDesc" class="textarea" placeholder="Colour, brand, identifying features…" rows="3" maxlength="2000"></textarea>
+          <span class="ferr" id="rDescErr"></span>
+        </div>
+        <div class="frow frow--2">
+          <div class="fg">
+            <label class="flabel" for="rLoc">Location <span>*</span></label>
+            <input type="text" id="rLoc" class="input" placeholder="e.g. Library, 2nd Floor" maxlength="255"/>
+            <span class="ferr" id="rLocErr"></span>
+          </div>
+          <div class="fg">
+            <label class="flabel" for="rDate">Date <span>*</span></label>
+            <input type="date" id="rDate" class="input"/>
+            <span class="ferr" id="rDateErr"></span>
+          </div>
+        </div>
+        <fieldset class="ffs">
+          <legend class="fleg">Contact Information</legend>
+          <div class="frow frow--2">
+            <div class="fg">
+              <label class="flabel" for="rName">Your Name <span>*</span></label>
+              <input type="text" id="rName" class="input" placeholder="Full Name" maxlength="150"/>
+              <span class="ferr" id="rNameErr"></span>
+            </div>
+            <div class="fg">
+              <label class="flabel" for="rPhone">Phone Number</label>
+              <input type="tel" id="rPhone" class="input" placeholder="012-345 6789" maxlength="20"/>
+            </div>
+          </div>
+          <div class="fg">
+            <label class="flabel" for="rEmail">Email Address <span>*</span></label>
+            <input type="email" id="rEmail" class="input" placeholder="you@student.qiu.edu.my" maxlength="255"/>
+            <span class="ferr" id="rEmailErr"></span>
+          </div>
+        </fieldset>
+        <div class="fg" id="rStatGrp" hidden>
+          <label class="flabel" for="rStat">Status</label>
+          <select id="rStat" class="select"><option value="Active">Active</option><option value="Claimed">Claimed</option><option value="Resolved">Resolved</option></select>
+        </div>
+        <div class="facts">
+          <button type="button" class="btn btn--s" id="mCancel">Cancel</button>
+          <button type="submit" class="btn btn--p" id="rSubmit">Submit Report</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Detail Modal -->
+  <div class="moverlay" id="mDetail" role="dialog" aria-modal="true" hidden>
+    <div class="modal modal--w">
+      <div class="modal__hdr">
+        <h2 class="modal__title">Item Details</h2>
+        <button class="modal__x" id="dClose">&times;</button>
+      </div>
+      <div id="dContent" class="detail"></div>
+    </div>
+  </div>
+
+  <!-- Logout confirmation -->
+  <div class="moverlay" id="mLogout" role="dialog" aria-modal="true" hidden>
+    <div class="modal" style="max-width:380px">
+      <div class="modal__hdr">
+        <h2 class="modal__title">Sign Out</h2>
+        <button class="modal__x" id="loClose">&times;</button>
+      </div>
+      <div style="padding:24px 28px 28px">
+        <p style="font-size:15px;color:var(--ink2);margin-bottom:20px">Are you sure you want to sign out?</p>
+        <div style="display:flex;gap:10px;justify-content:flex-end">
+          <button class="btn btn--s" id="loCancel">Cancel</button>
+          <button class="btn btn--d" id="loConfirm">Yes, Sign Out</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete confirmation -->
+  <div class="moverlay" id="mDelete" role="dialog" aria-modal="true" hidden>
+    <div class="modal" style="max-width:380px">
+      <div class="modal__hdr">
+        <h2 class="modal__title">Delete Report</h2>
+        <button class="modal__x" id="delClose">&times;</button>
+      </div>
+      <div style="padding:24px 28px 28px">
+        <p style="font-size:15px;color:var(--ink2);margin-bottom:20px">This will permanently delete the report. Are you sure?</p>
+        <div style="display:flex;gap:10px;justify-content:flex-end">
+          <button class="btn btn--s" id="delCancel">Cancel</button>
+          <button class="btn btn--d" id="delConfirm">Yes, Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+  <footer class="footer"><p>&copy; 2026 Quest International University — Lost &amp; Found Management System</p></footer>
+</div>
+
+<script>
+'use strict';
+const g   = id => document.getElementById(id);
+const esc = s  => String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = d  => { try{return new Date(d+'T00:00:00').toLocaleDateString('en-MY',{day:'2-digit',month:'short',year:'numeric'})}catch{return d} };
+
+/* ── user store ── */
+const UK='qiu_users';
+function loadUsers(){try{const r=localStorage.getItem(UK);return r?JSON.parse(r):[]}catch{return[]}}
+function saveUsers(u){try{localStorage.setItem(UK,JSON.stringify(u))}catch{}}
+function findUser(id,pw){return loadUsers().find(u=>u.id.toLowerCase()===id.toLowerCase()&&u.pw===pw)||null;}
+function userExists(id){return loadUsers().some(u=>u.id.toLowerCase()===id.toLowerCase());}
+function registerUser(u){const list=loadUsers();list.push(u);saveUsers(list);}
+
+let me=null;
+
+/* ── panel switching ── */
+function showPanel(name){
+  ['SignIn','Create'].forEach(p=>{
+    g('panel'+p).hidden=(p!==name);
+  });
+}
+
+/* ── views ── */
+function goLogin(){
+  document.body.className='login';
+  me=null;
+  ['siId','siPw','caName','caId','caPw','caPw2'].forEach(id=>{const el=g(id);if(el)el.value='';});
+  ['siAlert','caAlert'].forEach(id=>{const el=g(id);if(el)el.innerHTML='';});
+  ['siIdErr','siPwErr','caNameErr','caIdErr','caPwErr','caPw2Err'].forEach(id=>{const el=g(id);if(el)el.textContent='';});
+  showPanel('SignIn');
+}
+function goApp(user){
+  me=user;
+  document.body.className='app';
+  const ini=user.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+  g('uAv').textContent=ini;
+  g('uName').textContent=user.name;
+  g('uRole').textContent=user.role||'Student';
+  renderAll();
+}
+
+/* ── helpers ── */
+function togglePw(inputId,icoId){
+  const inp=g(inputId);
+  const show=inp.type==='password';
+  inp.type=show?'text':'password';
+  g(icoId).innerHTML=show
+    ?'<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>'
+    :'<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+}
+
+function updateStrength(){
+  const v=g('caPw').value;
+  let score=0;
+  if(v.length>=8)score++;if(/[A-Z]/.test(v))score++;if(/[0-9]/.test(v))score++;if(/[^A-Za-z0-9]/.test(v))score++;
+  const cls=['','weak','fair','good','good'];
+  const lbl=['','Weak','Fair','Good','Strong'];
+  const col=['','#e74c3c','var(--amber)','#27ae60','#27ae60'];
+  [1,2,3,4].forEach(i=>{g('psb'+i).className='pw-strength__bar'+(i<=score?' '+cls[score]:'');});
+  const lel=g('pwStrengthLabel');
+  lel.textContent=v?lbl[score]:'';
+  lel.style.color=v?col[score]:'var(--ink4)';
+}
+
+function alertHtml(msg){
+  return '<div class="lalert lalert--e"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>'+esc(msg)+'</div>';
+}
+function alertOkHtml(msg){
+  return '<div class="lalert lalert--ok"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:1px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'+esc(msg)+'</div>';
+}
+
+/* ── auth actions ── */
+function doSignIn(){
+  const id=g('siId').value.trim(), pw=g('siPw').value;
+  g('siAlert').innerHTML='';
+  g('siIdErr').textContent=''; g('siId').classList.remove('err');
+  g('siPwErr').textContent=''; g('siPw').classList.remove('err');
+  let ok=true;
+  if(!id){g('siId').classList.add('err');g('siIdErr').textContent='Please enter your Student ID or email.';ok=false;}
+  if(!pw){g('siPw').classList.add('err');g('siPwErr').textContent='Please enter your password.';if(ok)g('siPw').focus();ok=false;}
+  if(!ok)return;
+  const user=findUser(id,pw);
+  if(user){goApp(user);}
+  else{g('siAlert').innerHTML=alertHtml('Incorrect Student ID / email or password.');g('siId').focus();}
+}
+
+function doCreateAccount(){
+  const name=g('caName').value.trim(),id=g('caId').value.trim(),pw=g('caPw').value,pw2=g('caPw2').value;
+  g('caAlert').innerHTML='';
+  ['caName','caId','caPw','caPw2'].forEach(x=>{g(x).classList.remove('err');});
+  ['caNameErr','caIdErr','caPwErr','caPw2Err'].forEach(x=>{g(x).textContent='';});
+  let ok=true;
+  if(!name){g('caName').classList.add('err');g('caNameErr').textContent='Please enter your full name.';if(ok)g('caName').focus();ok=false;}
+  if(!id){g('caId').classList.add('err');g('caIdErr').textContent='Please enter your Student ID or email.';if(ok)g('caId').focus();ok=false;}
+  if(!pw||pw.length<6){g('caPw').classList.add('err');g('caPwErr').textContent='Password must be at least 6 characters.';if(ok)g('caPw').focus();ok=false;}
+  if(pw!==pw2){g('caPw2').classList.add('err');g('caPw2Err').textContent='Passwords do not match.';if(ok)g('caPw2').focus();ok=false;}
+  if(!ok)return;
+  if(userExists(id)){g('caId').classList.add('err');g('caAlert').innerHTML=alertHtml('This Student ID or email is already registered.');return;}
+  registerUser({id,pw,name,role:'Student'});
+  goApp({id,pw,name,role:'Student'});
+  showToast('Account created. Welcome!');
+}
+
+/* ── wire all login/auth buttons ── */
+document.addEventListener('DOMContentLoaded', function() {
+  // Sign In panel
+  var btnSI = g('btnSignIn');
+  if(btnSI) btnSI.addEventListener('click', doSignIn);
+
+  var btnGC = g('btnGoCreate');
+  if(btnGC) btnGC.addEventListener('click', function(){ showPanel('Create'); });
+
+  // Create Account panel
+  var btnCA = g('btnCreateAccount');
+  if(btnCA) btnCA.addEventListener('click', doCreateAccount);
+
+  var caPwEl = g('caPw');
+  if(caPwEl) caPwEl.addEventListener('input', updateStrength);
+
+  // data-action buttons (togglePw, panel switches)
+  document.querySelectorAll('[data-action]').forEach(function(el){
+    el.addEventListener('click', function(e){
+      e.preventDefault();
+      var action = el.getAttribute('data-action');
+      if(action === 'togglePw') togglePw(el.getAttribute('data-input'), el.getAttribute('data-ico'));
+      if(action === 'signIn')   showPanel('SignIn');
+    });
+  });
+
+  // Logout
+  g('btnLogout').addEventListener('click', function(){ openM('mLogout'); });
+  g('loClose').addEventListener('click',   function(){ closeM('mLogout'); });
+  g('loCancel').addEventListener('click',  function(){ closeM('mLogout'); });
+  g('loConfirm').addEventListener('click', function(){
+    closeM('mLogout'); closeM('mReport'); closeM('mDetail');
+    document.body.style.overflow=''; goLogin();
+  });
+});
+
+/* ════ APP DATA ════ */
+const SK='qiu_laf';
+const ICONS={Electronics:'💻',Documents:'📄','Personal Items':'🎒',Clothing:'👕',Keys:'🔑',Accessories:'👜',Books:'📚',Other:'📦'};
+
+let items=(()=>{try{const r=localStorage.getItem(SK);return r?JSON.parse(r):[...SEED]}catch{return[...SEED]}})();
+let tabActive='all',sq='',fst='',fcat='',editId=null,pendingDel=null;
+
+const save=()=>{try{localStorage.setItem(SK,JSON.stringify(items))}catch{}};
+const filtered=()=>items.filter(it=>{
+  if(tabActive!=='all'&&it.category!==tabActive)return false;
+  if(fst&&it.status!==fst)return false;
+  if(fcat&&it.item_category!==fcat)return false;
+  if(sq&&!`${it.title} ${it.description} ${it.location} ${it.item_category}`.toLowerCase().includes(sq.toLowerCase()))return false;
+  return true;
+});
+
+function renderAll(){save();
+  g('sTotal').textContent =items.length;
+  g('sLost').textContent  =items.filter(i=>i.category==='Lost').length;
+  g('sFound').textContent =items.filter(i=>i.category==='Found').length;
+  g('sActive').textContent=items.filter(i=>i.status==='Active').length;
+  const list=filtered(),grid=g('grid');
+  grid.innerHTML='';
+  g('empty').hidden=list.length>0;
+  list.forEach((it,idx)=>{
+    const ico=ICONS[it.item_category]||'📦';
+    const tc=it.category==='Lost'?'badge--lost':'badge--found';
+    const sc={Active:'badge--active',Claimed:'badge--claimed',Resolved:'badge--resolved'}[it.status]||'badge--active';
+    const a=document.createElement('article');
+    a.className='card'; a.setAttribute('role','listitem'); a.setAttribute('data-t',it.category);
+    a.style.animationDelay=`${idx*35}ms`;
+    a.innerHTML=`
+      <div class="card__hdr">
+        <h3 class="card__title">${esc(it.title)}</h3>
+        <div class="card__badges"><span class="badge ${tc}">${esc(it.category)}</span><span class="badge ${sc}">${esc(it.status)}</span></div>
+      </div>
+      <div class="card__cat">${ico} ${esc(it.item_category)}</div>
+      <p class="card__desc">${esc(it.description)}</p>
+      <div class="card__meta">
+        <span class="card__mi"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${esc(it.location)}</span>
+        <span class="card__mi"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>${fmt(it.date_reported)}</span>
+      </div>
+      <div class="card__acts">
+        <button class="btn btn--s btn--sm" data-a="view" data-id="${esc(it.id)}">View</button>
+        <button class="btn btn--s btn--sm" data-a="edit" data-id="${esc(it.id)}">Edit</button>
+        <button class="btn btn--d btn--sm" data-a="del"  data-id="${esc(it.id)}">Delete</button>
+      </div>`;
+    grid.appendChild(a);
+  });
+}
+
+g('grid').onclick=e=>{
+  const b=e.target.closest('[data-a]'); if(!b)return;
+  if(b.dataset.a==='view')openDetail(b.dataset.id);
+  if(b.dataset.a==='edit')openEdit(b.dataset.id);
+  if(b.dataset.a==='del') askDelete(b.dataset.id);
+};
+
+/* ── delete ── */
+function askDelete(id){pendingDel=id;openM('mDelete');}
+g('delClose').onclick =()=>{pendingDel=null;closeM('mDelete');};
+g('delCancel').onclick=()=>{pendingDel=null;closeM('mDelete');};
+g('delConfirm').onclick=()=>{
+  if(pendingDel){items=items.filter(i=>i.id!==pendingDel);pendingDel=null;}
+  closeM('mDelete');renderAll();showToast('Report deleted.');
+};
+
+/* ── detail ── */
+function openDetail(id){
+  const it=items.find(i=>i.id===id); if(!it)return;
+  const ico=ICONS[it.item_category]||'📦';
+  const tc=it.category==='Lost'?'badge--lost':'badge--found';
+  const sc={Active:'badge--active',Claimed:'badge--claimed',Resolved:'badge--resolved'}[it.status]||'badge--active';
+  g('dContent').innerHTML=`
+    <div class="detail__hdr">
+      <h3 class="detail__title">${esc(it.title)}</h3>
+      <div style="display:flex;gap:6px"><span class="badge ${tc}">${esc(it.category)}</span><span class="badge ${sc}">${esc(it.status)}</span></div>
+    </div>
+    <div class="dsec"><div class="dsec__ttl">Description</div><p style="font-size:14.5px;color:var(--ink2);line-height:1.65">${esc(it.description)}</p></div>
+    <div class="dsec"><div class="dsec__ttl">Item Details</div>
+      <div class="dgrid">
+        <div class="dfield"><label>Category</label><p>${ico} ${esc(it.item_category)}</p></div>
+        <div class="dfield"><label>Location</label><p>${esc(it.location)}</p></div>
+        <div class="dfield"><label>Date Reported</label><p>${fmt(it.date_reported)}</p></div>
+        <div class="dfield"><label>Status</label><p>${esc(it.status)}</p></div>
+      </div>
+    </div>
+    <div class="dsec"><div class="dsec__ttl">Contact</div>
+      <div class="dgrid">
+        <div class="dfield"><label>Name</label><p>${esc(it.contact_name)}</p></div>
+        <div class="dfield"><label>Phone</label><p>${it.contact_phone?esc(it.contact_phone):'<span style="color:var(--ink4)">—</span>'}</p></div>
+        <div class="dfield" style="grid-column:1/-1"><label>Email</label><p><a href="mailto:${esc(it.contact_email)}" style="color:var(--sage)">${esc(it.contact_email)}</a></p></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap">
+      <button class="btn btn--p btn--sm" data-a="edit-d" data-id="${esc(it.id)}">Edit Report</button>
+      <button class="btn btn--s btn--sm" data-a="close-d">Close</button>
+    </div>`;
+  openM('mDetail');
+}
+g('dContent').onclick=e=>{
+  const b=e.target.closest('[data-a]'); if(!b)return;
+  if(b.dataset.a==='edit-d'){closeM('mDetail');openEdit(b.dataset.id);}
+  if(b.dataset.a==='close-d')closeM('mDetail');
+};
+
+/* ── report form ── */
+const FLDS=[
+  {id:'rType', err:'rTypeErr', msg:'Please select a report type.'},
+  {id:'rCat',  err:'rCatErr',  msg:'Please select an item category.'},
+  {id:'rTitle',err:'rTitleErr',msg:'Please enter an item title.'},
+  {id:'rDesc', err:'rDescErr', msg:'Please enter a description.'},
+  {id:'rLoc',  err:'rLocErr',  msg:'Please enter a location.'},
+  {id:'rDate', err:'rDateErr', msg:'Please select a date.'},
+  {id:'rName', err:'rNameErr', msg:'Please enter your name.'},
+  {id:'rEmail',err:'rEmailErr',msg:'Please enter a valid email.'},
+];
+const clrForm=()=>FLDS.forEach(f=>{g(f.err).textContent='';g(f.id).classList.remove('err');});
+const valForm=()=>{
+  clrForm();let ok=true;
+  FLDS.forEach(f=>{
+    const el=g(f.id),v=el.value.trim();let m='';
+    if(!v)m=f.msg;
+    else if(f.id==='rEmail'&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v))m=f.msg;
+    if(m){g(f.err).textContent=m;el.classList.add('err');if(ok)el.focus();ok=false;}
+  });
+  return ok;
+};
+function openNew(){
+  editId=null;g('rForm').reset();g('rId').value='';
+  g('mTitle').textContent='Submit Report';g('rSubmit').textContent='Submit Report';
+  g('rStatGrp').hidden=true;clrForm();
+  g('rDate').value=new Date().toISOString().split('T')[0];
+  openM('mReport');
+}
+function openEdit(id){
+  const it=items.find(i=>i.id===id); if(!it)return;
+  editId=id;
+  g('rId').value=it.id; g('rType').value=it.category; g('rCat').value=it.item_category;
+  g('rTitle').value=it.title; g('rDesc').value=it.description; g('rLoc').value=it.location;
+  g('rDate').value=it.date_reported; g('rName').value=it.contact_name;
+  g('rPhone').value=it.contact_phone||''; g('rEmail').value=it.contact_email;
+  g('rStat').value=it.status; g('rStatGrp').hidden=false;
+  g('mTitle').textContent='Edit Report'; g('rSubmit').textContent='Save Changes';
+  clrForm(); openM('mReport');
+}
+g('rForm').onsubmit=e=>{
+  e.preventDefault(); if(!valForm())return;
+  const p={
+    id:editId||String(Date.now()),category:g('rType').value,item_category:g('rCat').value,
+    title:g('rTitle').value.trim(),description:g('rDesc').value.trim(),location:g('rLoc').value.trim(),
+    date_reported:g('rDate').value,contact_name:g('rName').value.trim(),
+    contact_phone:g('rPhone').value.trim(),contact_email:g('rEmail').value.trim(),
+    status:editId?g('rStat').value:'Active',
+    created_at:editId?(items.find(i=>i.id===editId)||{}).created_at:new Date().toISOString(),
+  };
+  if(editId){items=items.map(i=>i.id===editId?p:i);showToast('Report updated.');}
+  else{items.unshift(p);showToast('Report submitted.');}
+  closeM('mReport');renderAll();
+};
+
+/* ── tabs & filters ── */
+document.querySelectorAll('.tab').forEach(t=>{
+  t.onclick=()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('tab--on'));
+    t.classList.add('tab--on'); tabActive=t.dataset.tab; renderAll();
+  };
+});
+let st;
+g('fSearch').oninput=()=>{clearTimeout(st);st=setTimeout(()=>{sq=g('fSearch').value.trim();renderAll();},200);};
+g('fStat').onchange=()=>{fst=g('fStat').value;renderAll();};
+g('fCat').onchange =()=>{fcat=g('fCat').value;renderAll();};
+
+/* ── modals ── */
+function openM(id) {g(id).hidden=false;document.body.style.overflow='hidden';}
+function closeM(id){g(id).hidden=true; document.body.style.overflow='';}
+g('btnNew').onclick  =openNew;
+g('btnEmpty').onclick=openNew;
+g('mClose').onclick  =()=>closeM('mReport');
+g('mCancel').onclick =()=>closeM('mReport');
+g('dClose').onclick  =()=>closeM('mDetail');
+['mReport','mDetail','mLogout','mDelete'].forEach(id=>{
+  g(id).onclick=e=>{if(e.target===g(id))closeM(id);};
+});
+document.onkeydown=e=>{
+  if(e.key==='Escape'){['mReport','mDetail','mLogout','mDelete'].forEach(id=>{if(!g(id).hidden)closeM(id);});}
+};
+
+/* ── toast ── */
+let tt;
+function showToast(msg,type='ok'){
+  const t=g('toast');t.textContent=msg;t.className='toast toast--'+type;t.hidden=false;
+  clearTimeout(tt);tt=setTimeout(()=>{t.hidden=true;},3000);
+}
+
+/* ── start ── */
+goLogin();
+</script>
+</body>
+</html>
